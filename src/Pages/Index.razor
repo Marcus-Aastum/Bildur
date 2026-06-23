@@ -78,6 +78,12 @@ Welcome to your new app.
         </MudPaper>
     </MudItem>
 </MudGrid>
+@foreach (var fileContent in UploadedFiles)
+{
+    var imageb64 = Convert.ToBase64String(fileContent);
+    <img src="data:image/jpeg;base64, @imageb64" />
+}
+
 @code
 {
     private IReadOnlyList<IBrowserFile> _filesMultiple = [];
@@ -95,6 +101,8 @@ Welcome to your new app.
     private bool _uploading;
     private int _progress;
     private string _statusText = "Waiting for files.";
+
+    private List<byte[]> UploadedFiles = [];
 
     private async Task UploadFilesAsync()
     {
@@ -115,7 +123,14 @@ Welcome to your new app.
         for (var index = 0; index < total; index++)
         {
             var file = filesSnapshot[index];
-            await Task.Delay(1000); // Simulate file upload
+            var stream = file.OpenReadStream(14000000);
+            byte[] byteArrayContent = new byte[stream.Length];
+            var result = 0;
+            while (result < stream.Length)
+            {
+                result = result + await stream.ReadAsync(byteArrayContent, result, (int)stream.Length - result);
+            }
+            UploadedFiles.Add(byteArrayContent);
             _progress = (int)Math.Round((index + 1d) / total * 100);
             _statusText = index + 1 == total ? "Upload complete." : $"Uploading {index + 1} of {total}...";
             await RemoveFileFromUploadsAsync(file);
