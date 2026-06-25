@@ -79,14 +79,14 @@
         </MudPaper>
     </MudItem>
     <MudItem>
-        <MudCarousel Style="height:400px; margin-top: 50px; min-width: 700px; max-width: 100vw" AutoCycle="false" TData="object">
+        <MudCarousel ArrowsColor="@Color.Primary" BulletsColor="@Color.Secondary" Style="height:400px; margin-top: 50px; min-width: 700px; max-width: 100vw" AutoCycle="false" TData="object">
         @foreach (var fileContent in UploadedFiles)
         {
             <MudCarouselItem>
                     <div class="d-flex" style="height:100%">
                         <MudImage class="mx-auto my-auto" Src=@("data:" + fileContent.ImageType + ";base64, " + fileContent.base64String) style=" object-fit: scale-down !important; width: 100%; height: 100%" />
-                        <MudIconButton OnClick="async () => await DeleteImage(fileContent.ID)" Color="@Color.Error" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Style=" position: absolute; top: 20px; right: 10px"></MudIconButton>
                         <MudIconButton OnClick="() => DownloadImage(fileContent.ID)" Color="@Color.Info" Icon="@Icons.Material.Filled.Download" Variant="Variant.Outlined" Style=" position: absolute; top: 20px; right: 50px"></MudIconButton>
+                        <MudIconButton OnClick="async () => await DeleteImage(fileContent.ID)" Color="@Color.Error" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Style=" position: absolute; top: 20px; right: 10px"></MudIconButton>
                     </div>
             </MudCarouselItem>
         }

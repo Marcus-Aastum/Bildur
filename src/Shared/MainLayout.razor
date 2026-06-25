@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 <PageTitle>Bildur</PageTitle>
-<MudThemeProvider />
+<MudThemeProvider Theme="BildurTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -21,3 +21,22 @@
         </article>
     </main>
 </div>
+
+@code {
+    MudTheme BildurTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#015945",
+            Secondary = "#00467A"
+        },
+        Typography = new Typography()
+        {
+            Default = new DefaultTypography()
+            {
+                FontFamily = new[] { "Arial", "sans-serif" }
+            }
+        }
+    };
+
+}
