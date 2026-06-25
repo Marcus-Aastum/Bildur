@@ -82,10 +82,9 @@
         <MudCarousel Style="height:400px; margin-top: 50px; min-width: 700px; max-width: 100vw" AutoCycle="false" TData="object">
         @foreach (var fileContent in UploadedFiles)
         {
-            var imageb64 = Convert.ToBase64String(fileContent.Content);
             <MudCarouselItem>
                     <div class="d-flex" style="height:100%">
-                        <MudImage class="mx-auto my-auto" Src=@("data:" + fileContent.ImageType + ";base64, " + imageb64) style=" object-fit: scale-down !important; width: 100%; height: 100%" />
+                        <MudImage class="mx-auto my-auto" Src=@("data:" + fileContent.ImageType + ";base64, " + fileContent.base64String) style=" object-fit: scale-down !important; width: 100%; height: 100%" />
                         <MudIconButton OnClick="() => DeleteImage(fileContent.ID)" Color="@Color.Error" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Style=" position: absolute; top: 20px; right: 10px"></MudIconButton>
                         <MudIconButton OnClick="() => DownloadImage(fileContent.ID)" Color="@Color.Info" Icon="@Icons.Material.Filled.Download" Variant="Variant.Outlined" Style=" position: absolute; top: 20px; right: 50px"></MudIconButton>
                     </div>
@@ -112,7 +111,7 @@
     private int _progress;
     private string _statusText = "Venter på bilder.";
 
-    private List<Image> UploadedFiles = [];
+    private IEnumerable<Image> UploadedFiles = [];
 
     private async Task UploadFilesAsync()
     {
@@ -147,9 +146,13 @@
                 Size = (int)file.Size
             };
             await _imageService.InsertImageAsync(fileObject);
-
             _progress = (int)Math.Round((index + 1d) / total * 100);
             _statusText = index + 1 == total ? "Opplastning ferdig." : $"Laster opp {index + 1} av {total}...";
+
+            // In case the variables aren't disposed of correctly
+            fileObject.Content = new byte[0];
+            byteArrayContent = new byte[0];
+
             await RemoveFileFromUploadsAsync(file);
             await InvokeAsync(StateHasChanged);
         }
@@ -168,12 +171,14 @@
     {
         var image = UploadedFiles.Where(x => x.ID == id).First();
         await JS.InvokeVoidAsync(
-          "downloadFromByteArray", Convert.ToBase64String(image.Content), "image." + image.ImageType.Split("image/")[1], image.ImageType);
+          "downloadFromByteArray", image.base64String, "image." + image.ImageType.Split("image/")[1], image.ImageType);
     }
 
     protected override async Task OnInitializedAsync()
     {
         await LoadImagesAsync();
+
+        System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
     }
     private async Task RemoveFileFromUploadsAsync(IBrowserFile file)
     {
@@ -196,6 +201,13 @@
     private async Task LoadImagesAsync()
     {
         var images = await _imageService.GetAllImagesAsync();
-        UploadedFiles = images.ToList();
+        foreach (var image in images)
+        {
+            // Instead of duplicating data, convert to base64 string and remove the byte array to free up memory
+            // The String is less memory efficient, but is used to both display and download the image
+            image.base64String = Convert.ToBase64String(image.Content);
+            image.Content = new byte[0];
+        }
+        UploadedFiles = images.ToArray();
     }
 }

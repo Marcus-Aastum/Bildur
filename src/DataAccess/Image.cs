@@ -8,5 +8,6 @@
         public int Size;
         public int Width;
         public int Height;
+        public string? base64String;
     }
 }
