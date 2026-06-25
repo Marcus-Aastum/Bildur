@@ -19,8 +19,8 @@ namespace Bildur.DataAccess
         {
             using (var connection = new SqlConnection(_configuration.GetConnectionString("Bildur")))
             {
-                var sql = "INSERT INTO Images (Content, FileName, ImageType, Size) VALUES (@content, @name, @type, @size)";
-                var result = await connection.ExecuteAsync(sql, new { content = image.Content, name = image.FileName, type = image.ImageType, size = image.Size });
+                var sql = "INSERT INTO Images (Content, FileName, ImageType, Size, UploadTime) VALUES (@content, @name, @type, @size, @uploadTime)";
+                var result = await connection.ExecuteAsync(sql, new { content = image.Content, name = image.FileName, type = image.ImageType, size = image.Size, uploadTime = image.UploadTime });
                 if (result == 1) return true;
             }
             return false;

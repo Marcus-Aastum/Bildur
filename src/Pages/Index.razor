@@ -144,7 +144,8 @@
                 Content = byteArrayContent,
                 FileName = file.Name,
                 ImageType = file.ContentType,
-                Size = (int)file.Size
+                Size = (int)file.Size,
+                UploadTime = DateTime.Now
             };
             await _imageService.InsertImageAsync(fileObject);
             _progress = (int)Math.Round((index + 1d) / total * 100);
