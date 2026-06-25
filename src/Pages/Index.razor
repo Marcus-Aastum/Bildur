@@ -85,7 +85,7 @@
             <MudCarouselItem>
                     <div class="d-flex" style="height:100%">
                         <MudImage class="mx-auto my-auto" Src=@("data:" + fileContent.ImageType + ";base64, " + fileContent.base64String) style=" object-fit: scale-down !important; width: 100%; height: 100%" />
-                        <MudIconButton OnClick="() => DeleteImage(fileContent.ID)" Color="@Color.Error" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Style=" position: absolute; top: 20px; right: 10px"></MudIconButton>
+                        <MudIconButton OnClick="async () => await DeleteImage(fileContent.ID)" Color="@Color.Error" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Style=" position: absolute; top: 20px; right: 10px"></MudIconButton>
                         <MudIconButton OnClick="() => DownloadImage(fileContent.ID)" Color="@Color.Info" Icon="@Icons.Material.Filled.Download" Variant="Variant.Outlined" Style=" position: absolute; top: 20px; right: 50px"></MudIconButton>
                     </div>
             </MudCarouselItem>
@@ -142,6 +142,7 @@
             var fileObject = new Image()
             {
                 Content = byteArrayContent,
+                FileName = file.Name,
                 ImageType = file.ContentType,
                 Size = (int)file.Size
             };
@@ -161,7 +162,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async void DeleteImage(int id)
+    private async Task DeleteImage(int id)
     {
         await _imageService.DeleteImageAsync(id);
         await LoadImagesAsync();

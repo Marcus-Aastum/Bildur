@@ -1,0 +1,63 @@
+﻿@page "/list"
+
+@using Bildur.DataAccess
+@inject ImageService _imageService
+@inject IJSRuntime JS
+
+<PageTitle>Index</PageTitle>
+
+<h1>Bildur AS Bildesystem™</h1>
+
+<MudTable Items="@UploadedFiles" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Filnavn</MudTh>
+        <MudTh>Størrelse (kb)</MudTh>
+        <MudTh>Last ned</MudTh>
+        <MudTh>Slett</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Filename">@context.FileName</MudTd>
+        <MudTd DataLabel="Size">@(context.Size / 1000)</MudTd>
+        <MudTd DataLabel="Download"><MudIconButton OnClick="() => DownloadImage(context.ID)" Color="@Color.Info" Icon="@Icons.Material.Filled.Download" Variant="Variant.Outlined"></MudIconButton></MudTd>
+        <MudTd DataLabel="Delete"><MudIconButton OnClick="async () => await DeleteImage(context.ID)" Color="@Color.Error" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined"></MudIconButton></MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code
+{
+
+    private IEnumerable<Image> UploadedFiles = [];
+
+    private async Task DeleteImage(int id)
+    {
+        await _imageService.DeleteImageAsync(id);
+        await LoadImagesAsync();
+    }
+
+    private async void DownloadImage(int id)
+    {
+        var image = UploadedFiles.Where(x => x.ID == id).First();
+        await JS.InvokeVoidAsync(
+          "downloadFromByteArray", image.base64String, "image." + image.ImageType.Split("image/")[1], image.ImageType);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadImagesAsync();
+
+        System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
+    }
+
+    private async Task LoadImagesAsync()
+    {
+        var images = await _imageService.GetAllImagesAsync();
+        foreach (var image in images)
+        {
+            // Instead of duplicating data, convert to base64 string and remove the byte array to free up memory
+            // The String is less memory efficient, but is used to both display and download the image
+            image.base64String = Convert.ToBase64String(image.Content);
+            image.Content = new byte[0];
+        }
+        UploadedFiles = images.ToArray();
+    }
+}

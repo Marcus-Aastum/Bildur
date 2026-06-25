@@ -25,6 +25,7 @@ public class AddImagesTable : Migration
         	ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
         	Content varbinary(MAX) NOT NULL,
         	ImageType NVARCHAR(20) NOT NULL,
+        	FileName NVARCHAR(255) NOT NULL,
         	Size INT,
         	Width INT,
         	Height INT
