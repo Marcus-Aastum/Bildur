@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="Migrator/Migrator.csproj" Id="503c065d-c7e8-49f2-93dc-1bcc7c82f1e7" />
   <Project Path="src/Bildur.csproj" />
 </Solution>
