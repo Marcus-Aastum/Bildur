@@ -28,6 +28,8 @@
 
 @code
 {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
 
     private IEnumerable<Image> UploadedFiles = [];
 
@@ -53,7 +55,7 @@
 
     private async Task LoadImagesAsync()
     {
-        var images = await _imageService.GetAllImagesAsync();
+        var images = await _imageService.GetAllImagesForUserAsync(await GetSubClaim());
         foreach (var image in images)
         {
             // Instead of duplicating data, convert to base64 string and remove the byte array to free up memory
@@ -62,5 +64,12 @@
             image.Content = new byte[0];
         }
         UploadedFiles = images.ToArray();
+    }
+
+    private async Task<string> GetSubClaim()
+    {
+        var authState = await AuthState!;
+        // Shortname for this claim is 'sub'
+        return authState.User.Claims.Where(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").First().Value;
     }
 }
