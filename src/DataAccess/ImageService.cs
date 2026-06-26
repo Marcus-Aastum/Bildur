@@ -15,12 +15,20 @@ namespace Bildur.DataAccess
             }
         }
 
+        public async Task<IEnumerable<Image>> GetAllImagesForUserAsync(string user)
+        {
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("Bildur")))
+            {
+                return await connection.QueryAsync<Image>("SELECT * FROM Images WHERE Owner = @user", new { user });
+            }
+        }
+
         public async Task<bool> InsertImageAsync(Image image) 
         {
             using (var connection = new SqlConnection(_configuration.GetConnectionString("Bildur")))
             {
-                var sql = "INSERT INTO Images (Content, FileName, ImageType, Size, UploadTime) VALUES (@content, @name, @type, @size, @uploadTime)";
-                var result = await connection.ExecuteAsync(sql, new { content = image.Content, name = image.FileName, type = image.ImageType, size = image.Size, uploadTime = image.UploadTime });
+                var sql = "INSERT INTO Images (Content, FileName, ImageType, Size, UploadTime, Owner) VALUES (@content, @name, @type, @size, @uploadTime, @owner)";
+                var result = await connection.ExecuteAsync(sql, new { content = image.Content, name = image.FileName, type = image.ImageType, size = image.Size, uploadTime = image.UploadTime, owner = image.Owner });
                 if (result == 1) return true;
             }
             return false;

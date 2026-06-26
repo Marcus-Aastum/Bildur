@@ -3,6 +3,8 @@
 @inject ImageService _imageService
 @inject IJSRuntime JS
 
+@attribute [Authorize]
+
 <PageTitle>Index</PageTitle>
 
 <h1>Bildur AS Bildesystem™</h1>
@@ -95,6 +97,9 @@
 </MudGrid>
 @code
 {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+
     private IReadOnlyList<IBrowserFile> _filesMultiple = [];
     private IBrowserFile? _filesPDF;
     private IReadOnlyList<IBrowserFile> _filesImages = [];
@@ -127,6 +132,8 @@
         _uploading = true;
         _progress = 0;
         _statusText = "Laster opp...";
+        
+        var sub = await GetSubClaim();
 
         var total = filesSnapshot.Count;
         for (var index = 0; index < total; index++)
@@ -145,7 +152,8 @@
                 FileName = file.Name,
                 ImageType = file.ContentType,
                 Size = (int)file.Size,
-                UploadTime = DateTime.Now
+                UploadTime = DateTime.Now,
+                Owner = sub
             };
             await _imageService.InsertImageAsync(fileObject);
             _progress = (int)Math.Round((index + 1d) / total * 100);
@@ -202,7 +210,7 @@
 
     private async Task LoadImagesAsync()
     {
-        var images = await _imageService.GetAllImagesAsync();
+        var images = await _imageService.GetAllImagesForUserAsync(await GetSubClaim());
         foreach (var image in images)
         {
             // Instead of duplicating data, convert to base64 string and remove the byte array to free up memory
@@ -212,4 +220,11 @@
         }
         UploadedFiles = images.ToArray();
     }
+
+    private async Task<string> GetSubClaim()
+    {
+        var authState = await AuthState!;
+        // Shortname for this claim is 'sub'
+        return authState.User.Claims.Where(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").First().Value;
+    } 
 }

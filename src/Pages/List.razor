@@ -3,6 +3,7 @@
 @using Bildur.DataAccess
 @inject ImageService _imageService
 @inject IJSRuntime JS
+@attribute [Authorize]
 
 <PageTitle>Index</PageTitle>
 
@@ -11,14 +12,14 @@
 <MudTable Items="@UploadedFiles" Hover="true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
     <HeaderContent>
         <MudTh>Filnavn</MudTh>
-        <MudTh>Størrelse (kb)</MudTh>
+        <MudTh>Størrelse (mb)</MudTh>
         <MudTh>Lastet opp</MudTh>
         <MudTh>Last ned</MudTh>
         <MudTh>Slett</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Filename">@context.FileName</MudTd>
-        <MudTd DataLabel="Size">@(context.Size / 1000)</MudTd>
+        <MudTd DataLabel="Size">@((float)context.Size / 1000000)</MudTd>
         <MudTd DataLabel="UploadTime">@context.UploadTime.ToShortDateString() @context.UploadTime.ToShortTimeString()</MudTd>
         <MudTd DataLabel="Download"><MudIconButton OnClick="() => DownloadImage(context.ID)" Color="@Color.Info" Icon="@Icons.Material.Filled.Download" Variant="Variant.Outlined"></MudIconButton></MudTd>
         <MudTd DataLabel="Delete"><MudIconButton OnClick="async () => await DeleteImage(context.ID)" Color="@Color.Error" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined"></MudIconButton></MudTd>
