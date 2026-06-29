@@ -1,0 +1,20 @@
+# Gateway should be shared for whole cluster, and is therefore not pictured here
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bildur-http
+  namespace: bildur
+spec:
+  hostnames:
+    - {{ .Values.gateway.hostname }}
+  rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: bildur-svc
+        port: {{ .Values.gateway.port }}
+        weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

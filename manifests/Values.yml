@@ -1,0 +1,5 @@
+helseId:
+    authority: "https://helseid-sts.test.nhn.no/"
+gateway:
+    port: 8080
+    hostname: bildur.no # example domain

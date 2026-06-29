@@ -1,0 +1,38 @@
+services:
+  db:
+    image: "mcr.microsoft.com/mssql/server:2022-CU17-ubuntu-22.04@sha256:d252932ef839c24c61c1139cc98f69c85ca774fa7c6bfaaa0015b7eb02b9dc87"
+    environment:
+      MSSQL_SA_PASSWORD: "p@ssw0rdIsAwesome" # Not Sensitive
+      ACCEPT_EULA: "Y"
+    ports:
+      - "5701:1433"
+    healthcheck:
+      # test command: https://github.com/microsoft/mssql-docker/issues/133#issuecomment-2571313647
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P $$MSSQL_SA_PASSWORD -Q 'SELECT 1'" ]
+      interval: 2s
+      retries: 5
+      start_period: 5s
+      timeout: 2s
+  bildur:
+    env_file: ./src/.env
+    environment:
+      - ConnectionStrings__Bildur=Server=db,1433;Database=master;User ID=SA;Password=p@ssw0rdIsAwesome;TrustServerCertificate=True; #Not sensitive      
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: bildur
+    ports:
+      - 5000:8080
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+  migrator:
+    environment:
+      - ConnectionStrings__Bildur=Server=db,1433;Database=master;User ID=SA;Password=p@ssw0rdIsAwesome;TrustServerCertificate=True; #Not sensitive    
+    build:  
+      context: .
+      dockerfile: ./Dockerfile
+      target: migrator
+    depends_on:
+      db:
+        condition: service_healthy
